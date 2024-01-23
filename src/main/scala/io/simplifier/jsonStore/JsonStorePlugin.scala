@@ -38,7 +38,6 @@ object JsonStorePlugin extends SimplifierPluginLogic(
 
   override def startPluginServices(basicState: SimplifierPlugin.BasicState): Future[PluginBaseHttpService] = Future {
 
-    val configBackend = basicState.config.getString("plugin.backend", "mapdb").toLowerCase
     storeBackend = new DatabaseStoreBackend(basicState.config, new JsonValueStoreCollectionDao, new JsonValueStoreValueDao, new UserTransaction)
 
     storeBackend.init()
