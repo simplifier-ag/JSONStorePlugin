@@ -1,4 +1,4 @@
-version="1.0.2"
+version="1.0.3"
 name="jsonstoreplugin"
 remote_tag=simplifierag/${name}:${version}
 echo "***** building:" ${name}:${version}
