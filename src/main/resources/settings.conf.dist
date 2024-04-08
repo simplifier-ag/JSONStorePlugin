@@ -1,0 +1,34 @@
+plugin {
+    registration {
+      host = "127.0.0.1"
+      port = 8085
+    }
+
+    http {
+      interface = "0.0.0.0"
+      port = 0
+      exposedHost = "127.0.0.1"
+    }
+
+    timeoutSeconds = 60
+    shutdownTimeout = 60
+    maximumTimeout = 180
+}
+
+database {
+  dbms: "mysql"
+  user: "simplifier"
+  pass: "simplifier"
+  host: "localhost"
+  port: 3306
+  database: "simplifier_jsonstore"
+  // table_prefix: ""
+}
+
+database_update {
+  automatic_update: true
+  verify_schema: true
+  // baseline: "1.0"
+  // ignore_dirty_schema: true
+  // schema_version_table: "custom_schema_version"
+}
