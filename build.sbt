@@ -30,14 +30,26 @@ lazy val jsonStorePlugin = (project in file("."))
 
 
 //Security Options for Java >= 18
-val moduleSecurityRuntimeOptions = Seq(
-  "--add-opens=java.base/java.lang=ALL-UNNAMED",
-  "--add-opens=java.base/java.util=ALL-UNNAMED",
-  "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
-  "--add-opens=java.base/sun.security.jca=ALL-UNNAMED",
-  // used by W3CXmlUtil
-  "--add-exports=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED"
+lazy val requireAddOpensPackages = Seq(
+  "java.base/java.lang",
+  "java.base/java.util",
+  "java.base/java.time",
+  "java.base/java.lang.invoke",
+  "java.base/sun.security.jca"
+)
+lazy val requireAddExportsPackages = Seq(
+  "java.xml/com.sun.org.apache.xalan.internal.xsltc.trax"
 )
 
-run / javaOptions ++= moduleSecurityRuntimeOptions
+assembly / packageOptions +=
+  Package.ManifestAttributes(
+    "Add-Opens" -> requireAddOpensPackages.mkString(" "),
+    "Add-Exports" -> requireAddExportsPackages.mkString(" "),
+    "Class-Path" -> (file("lib") * "*.jar").get.mkString(" ")
+  )
+
+run / javaOptions ++=
+  requireAddOpensPackages.map("--add-opens=" + _ + "=ALL-UNNAMED") ++
+    requireAddExportsPackages.map("--add-exports=" + _ + "=ALL-UNNAMED")
+
 run / fork := true
