@@ -23,7 +23,7 @@ lazy val jsonStorePlugin = (project in file("."))
       "com.mysql"                % "mysql-connector-j"       % "8.2.0"       exclude("com.google.protobuf", "protobuf-java"),
       "com.oracle.database.jdbc" % "ojdbc11-production"      % "23.4.0.24.05" pomOnly() exclude("com.oracle.database.xml", "xmlparserv2"),
       "org.mapdb"                % "mapdb"                   % "2.0-beta11"  withSources() withJavadoc(),
-      "io.github.simplifier-ag" %% "simplifier-plugin-base"  % "1.0.0"       withSources()
+      "io.github.simplifier-ag" %% "simplifier-plugin-base"  % "1.0.2"       withSources()
     )
   )
 
