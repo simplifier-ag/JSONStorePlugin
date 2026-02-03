@@ -1,4 +1,6 @@
-FROM simplifierag/simplifier-assembly:main_0.1.0 AS build
+FROM simplifierag/simplifier-assembly:graal25_2.0.9 AS build
+
+# this is probably not used at all...
 
 WORKDIR /build
 COPY . /build/
