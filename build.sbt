@@ -1,9 +1,10 @@
 ThisBuild / organization := "io.simplifier"
 ThisBuild / version := sys.env.get("VERSION").getOrElse("NA")
-ThisBuild / scalaVersion := "2.12.15"
+ThisBuild / scalaVersion := "2.12.20"
 
 ThisBuild / useCoursier := true
 
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 lazy val jsonStorePlugin = (project in file("."))
   .settings(
@@ -20,10 +21,10 @@ lazy val jsonStorePlugin = (project in file("."))
         oldStrategy(x)
     },
     libraryDependencies ++= Seq(
-      "com.mysql"                % "mysql-connector-j"       % "8.2.0"       exclude("com.google.protobuf", "protobuf-java"),
-      "com.oracle.database.jdbc" % "ojdbc11-production"      % "23.4.0.24.05" pomOnly() exclude("com.oracle.database.xml", "xmlparserv2"),
+      "com.mysql" % "mysql-connector-j" % "8.4.0" exclude("com.google.protobuf", "protobuf-java"),
+      "com.oracle.database.jdbc" % "ojdbc11-production" % "23.4.0.24.05" pomOnly() exclude("com.oracle.database.xml", "xmlparserv2"),
       "org.mapdb"                % "mapdb"                   % "2.0-beta11"  withSources() withJavadoc(),
-      "io.github.simplifier-ag" %% "simplifier-plugin-base"  % "1.0.3"       withSources()
+      "io.github.simplifier-ag" %% "simplifier-plugin-base"  % "1.0.4"       withSources()
     )
   )
 
