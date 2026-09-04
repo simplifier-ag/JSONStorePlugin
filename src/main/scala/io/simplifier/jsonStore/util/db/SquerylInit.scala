@@ -28,11 +28,10 @@ object SquerylInit extends Logging {
   @volatile private var _tablePrefix: Option[String] = None
   @volatile private var _config: DbConfig = _
 
-  case class DbConfig (host: String, port: String, database: String, connSpec: ConnectionSpec, username: String, password: String, poolSize: Int, tablePrefix: Option[String] = None)
+  case class DbConfig (host: String, port: String, database: String, connSpec: ConnectionSpec, username: String, password: String, poolSize: Int, tablePrefix: Option[String] = None, tls: Boolean = false)
   case class ConnectionSpec (driverClass: String, urlTemplate: String, dbAdapter: DatabaseAdapter)
 
-  val mySqlConnParams: Seq[String] = Seq("allowPublicKeyRetrieval=true", "useUnicode=yes", "characterEncoding=UTF-8", "useFastDateParsing=false", "useSSL=false")
-  val connParams: Map[String, Seq[String]] = Map(VendorNameMySql -> mySqlConnParams)
+  def mySqlConnParams(tls: Boolean): Seq[String] = Seq("allowPublicKeyRetrieval=true", "useUnicode=yes", "characterEncoding=UTF-8", "useFastDateParsing=false", s"useSSL=$tls")
 
   def H2File(path: String): ConnectionSpec = ConnectionSpec ("org.h2.Driver", s"jdbc:h2:$path", getAdapter(VendorNameH2))
   val H2Mem: ConnectionSpec = ConnectionSpec ("org.h2.Driver", "jdbc:h2:mem:", getAdapter(VendorNameH2Mem))
@@ -75,17 +74,13 @@ object SquerylInit extends Logging {
 
     def db(key: String) = dbRaw(key).toString
 
-    def evaluateConnectionStringParams(vendor: String, connectionSpec: ConnectionSpec): ConnectionSpec = {
-      (connParams.get(vendor), connectionStringParameter.get(vendor)) match {
-        case (None, None) => connectionSpec
-        case (defaultParams, additionalParams) =>
-          val allParams = defaultParams.getOrElse(Seq()) ++ additionalParams.getOrElse(Seq())
-          if(allParams.nonEmpty) {
-            val newUrlTemplate = connectionSpec.urlTemplate + allParams.mkString("?", "&", "")
-            connectionSpec.copy(urlTemplate = newUrlTemplate)
-          } else {
-            connectionSpec
-          }
+    def evaluateConnectionStringParams(vendor: String, connectionSpec: ConnectionSpec, defaultParams: Seq[String] = Seq()): ConnectionSpec = {
+      val allParams = defaultParams ++ connectionStringParameter.getOrElse(vendor, Seq())
+      if(allParams.nonEmpty) {
+        val newUrlTemplate = connectionSpec.urlTemplate + allParams.mkString("?", "&", "")
+        connectionSpec.copy(urlTemplate = newUrlTemplate)
+      } else {
+        connectionSpec
       }
     }
 
@@ -97,12 +92,18 @@ object SquerylInit extends Logging {
 
     val tp = dbRaw.get("table_prefix").map (_.asInstanceOf[String])
 
+    val tls = dbRaw.get("tls") match {
+      case Some (b: java.lang.Boolean) => b.booleanValue
+      case Some (_) => throw new IllegalArgumentException ("tls must be a boolean value, if configured")
+      case None => false
+    }
+
     vendor = db("dbms")
     val parsedConfig = vendor match {
       case VendorNameH2     => H2FileConfig (db("database"), poolSize, tp)
       case VendorNameH2Mem  => H2MemConfig (poolSize, tp)
-      case VendorNameMySql  => val connectionSpec = evaluateConnectionStringParams(VendorNameMySql, MySql)
-        DbConfig (db("host"), db("port"), db("database"), connectionSpec, db("user"), dbPw, poolSize, tp)
+      case VendorNameMySql  => val connectionSpec = evaluateConnectionStringParams(VendorNameMySql, MySql, mySqlConnParams(tls))
+        DbConfig (db("host"), db("port"), db("database"), connectionSpec, db("user"), dbPw, poolSize, tp, tls)
       case VendorNameOracle => val connectionSpec = evaluateConnectionStringParams(VendorNameOracle, Oracle)
         DbConfig (db("host"), db("port"), db("database"), connectionSpec, db("user"), dbPw, poolSize, tp)
       case _ => throw new IllegalArgumentException (s"unknown dbms vendor $vendor")
