@@ -23,6 +23,7 @@ database {
   port: 3306
   database: "simplifier_jsonstore"
   // table_prefix: ""
+  tls: false // set to true if the database requires a TLS connection
 }
 
 database_update {
